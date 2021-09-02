@@ -4,12 +4,13 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
-
 	"github.com/spf13/viper"
 )
 
 var cfgFile string
+var log = logrus.New()
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
@@ -50,6 +51,7 @@ func init() {
 
 // initConfig reads in config file and ENV variables if set.
 func initConfig() {
+
 	if cfgFile != "" {
 		// Use config file from the flag.
 		viper.SetConfigFile(cfgFile)
@@ -57,11 +59,22 @@ func initConfig() {
 		// Find home directory.
 		home, err := os.UserHomeDir()
 		cobra.CheckErr(err)
+		log.WithFields(logrus.Fields{
+			"home": home,
+		}).Info("home")
 
 		// Search config in home directory with name ".hello-go-cli" (without extension).
 		viper.AddConfigPath(home)
 		viper.SetConfigType("yaml")
 		viper.SetConfigName(".hello-go-cli")
+
+		viper.SetDefault("ContentDir", "content")
+		viper.SetDefault("LayoutDir", "layouts")
+		viper.SetDefault("Taxonomies", map[string]string{"tag": "tags", "category": "categories"})
+
+		viper.Set("Verbose", true)
+
+		viper.WriteConfig()
 	}
 
 	viper.AutomaticEnv() // read in environment variables that match
